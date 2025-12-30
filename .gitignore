@@ -43,7 +43,6 @@ third_party/*/
 version.hpp
 
 # Test outputs
-Testing/
 test_*.log
 *.gcov
 *.gcda
