@@ -1,0 +1,41 @@
+# Kyros Daemon Configuration
+
+[service]
+agent_id = auto
+agent_name = kyros-agent
+tags = production, monitoring
+
+[scanning]
+# Cron-style schedule: "*/15 * * * *" = every 15 minutes
+scan_schedule = */15 * * * *
+full_scan_schedule = 0 2 * * *  # Daily at 2 AM
+
+# What to scan
+scan_configs = true
+scan_processes = true
+scan_network = true
+scan_containers = false
+
+# Active probing
+enable_active_probing = true
+probe_timeout_ms = 5000
+
+# Interrogation
+enable_interrogation = true
+max_tools = 100
+max_resources = 100
+
+[storage]
+state_db_path = /var/lib/kyros/state.db
+retention_days = 30
+
+[logging]
+log_level = info
+log_file = /var/log/kyros/daemon.log
+
+[management]
+# Optional: Send results to central management server
+enable_management_server = false
+# management_server_url = https://mcp-management.example.com
+# auth_token = <your-token>
+heartbeat_interval_seconds = 60

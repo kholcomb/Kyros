@@ -47,6 +47,7 @@ test_*.log
 *.gcov
 *.gcda
 *.gcno
+tests/*.json
 
 # Package files
 *.deb

@@ -1,0 +1,112 @@
+{
+  "name": "False Positive Exclusions",
+  "version": "1.0",
+  "description": "Filters common false positives (Chromium helpers, LSP servers, Docker processes)",
+  "rules": [
+    {
+      "name": "Claude Helper Processes",
+      "description": "Exclude Chromium helper processes from Claude Desktop",
+      "match": {
+        "process_name": "Helper",
+        "has_evidence_type": "parent_process"
+      },
+      "action": {
+        "add_negative_evidence": {
+          "type": "chromium_helper",
+          "description": "Chromium helper process (GPU/Renderer/Network/Plugin)",
+          "confidence": 0.99
+        }
+      }
+    },
+    {
+      "name": "VS Code HTML Language Server",
+      "description": "Exclude VS Code HTML language server",
+      "match": {
+        "command_contains": "vscode-html-language-server"
+      },
+      "action": {
+        "add_negative_evidence": {
+          "type": "vscode_lsp",
+          "description": "VS Code HTML Language Server Protocol server",
+          "confidence": 0.95
+        }
+      }
+    },
+    {
+      "name": "VS Code JSON Language Server",
+      "description": "Exclude VS Code JSON language server",
+      "match": {
+        "command_contains": "vscode-json-language-server"
+      },
+      "action": {
+        "add_negative_evidence": {
+          "type": "vscode_lsp",
+          "description": "VS Code JSON Language Server Protocol server",
+          "confidence": 0.95
+        }
+      }
+    },
+    {
+      "name": "VS Code CSS Language Server",
+      "description": "Exclude VS Code CSS language server",
+      "match": {
+        "command_contains": "vscode-css-language-server"
+      },
+      "action": {
+        "add_negative_evidence": {
+          "type": "vscode_lsp",
+          "description": "VS Code CSS Language Server Protocol server",
+          "confidence": 0.95
+        }
+      }
+    },
+    {
+      "name": "VS Code TypeScript Language Server",
+      "description": "Exclude VS Code TypeScript language server",
+      "match": {
+        "command_contains": "typescript-language-server"
+      },
+      "action": {
+        "add_negative_evidence": {
+          "type": "vscode_lsp",
+          "description": "TypeScript Language Server Protocol server",
+          "confidence": 0.95
+        }
+      }
+    },
+    {
+      "name": "ESLint Language Server",
+      "description": "Exclude ESLint language server",
+      "match": {
+        "command_contains": "vscode-eslint-language-server"
+      },
+      "action": {
+        "add_negative_evidence": {
+          "type": "eslint_lsp",
+          "description": "ESLint Language Server",
+          "confidence": 0.95
+        }
+      }
+    },
+    {
+      "name": "Docker VM Processes",
+      "description": "Exclude Docker Desktop virtualization processes",
+      "match": {
+        "process_name": "com.docker"
+      },
+      "action": {
+        "exclude": true
+      }
+    },
+    {
+      "name": "Generic Language Server Pattern",
+      "description": "Soft exclude for generic language server patterns",
+      "match": {
+        "command_contains": "language-server"
+      },
+      "action": {
+        "set_maximum_confidence": 0.4
+      }
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  # ============================================================================
+  # Build and Test - Linux
+  # ============================================================================
+  build-linux:
+    name: Build & Test (Linux)
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        compiler:
+          - { cc: gcc-11, cxx: g++-11 }
+          - { cc: clang-14, cxx: clang++-14 }
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build libsqlite3-dev lcov
+
+    - name: Configure CMake
+      env:
+        CC: ${{ matrix.compiler.cc }}
+        CXX: ${{ matrix.compiler.cxx }}
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DBUILD_TESTS=ON -DBUILD_DAEMON=ON -DENABLE_CONTAINERS=ON
+
+    - name: Build
+      run: cmake --build build --config ${{ env.BUILD_TYPE }} -j$(nproc)
+
+    - name: Run tests
+      working-directory: build
+      run: ctest --output-on-failure --verbose
+
+  # ============================================================================
+  # Build and Test - macOS
+  # ============================================================================
+  build-macos:
+    name: Build & Test (macOS)
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: brew install cmake ninja sqlite3
+
+    - name: Configure CMake
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DBUILD_TESTS=ON -DBUILD_DAEMON=ON -DENABLE_CONTAINERS=ON
+
+    - name: Build
+      run: cmake --build build --config ${{ env.BUILD_TYPE }} -j$(sysctl -n hw.ncpu)
+
+    - name: Run tests
+      working-directory: build
+      run: ctest --output-on-failure --verbose
+
+  # ============================================================================
+  # Code Coverage
+  # ============================================================================
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build libsqlite3-dev lcov
+
+    - name: Configure CMake (Coverage)
+      env:
+        CC: gcc-11
+        CXX: g++-11
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Coverage -DBUILD_TESTS=ON -DBUILD_DAEMON=ON
+
+    - name: Build
+      run: cmake --build build --config Coverage
+
+    - name: Generate coverage report
+      working-directory: build
+      run: cmake --build . --target coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: build/coverage/coverage_filtered.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # ============================================================================
+  # Static Analysis
+  # ============================================================================
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build clang-tidy-14 cppcheck
+
+    - name: Configure CMake
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON
+
+    - name: Run cppcheck
+      run: |
+        cppcheck --enable=all --suppress=missingInclude --suppress=unusedFunction --error-exitcode=1 --inline-suppr -I include src/
+
+  # ============================================================================
+  # Sanitizers
+  # ============================================================================
+  sanitizers:
+    name: Sanitizers (ASan + UBSan)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build libsqlite3-dev
+
+    - name: Configure CMake with sanitizers
+      env:
+        CC: clang-14
+        CXX: clang++-14
+        CXXFLAGS: "-fsanitize=address,undefined -fno-omit-frame-pointer"
+        LDFLAGS: "-fsanitize=address,undefined"
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Run tests with sanitizers
+      working-directory: build
+      env:
+        ASAN_OPTIONS: "detect_leaks=1:symbolize=1:abort_on_error=1"
+        UBSAN_OPTIONS: "print_stacktrace=1:abort_on_error=1"
+      run: ctest --output-on-failure --verbose

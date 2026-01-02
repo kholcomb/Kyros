@@ -1,0 +1,55 @@
+{
+  "name": "Docker MCP Detection Rules",
+  "version": "1.0",
+  "description": "Defines confidence levels for Docker MCP server indicators",
+  "rules": [
+    {
+      "name": "Docker MCP Server List - Definitive",
+      "description": "Containers in docker mcp server list are definitionally MCP servers",
+      "match": {"has_evidence_type": "docker_mcp_server_list"},
+      "action": {"set_minimum_confidence": 1.0}
+    },
+    {
+      "name": "Docker MCP Gateway - Near Definitive",
+      "description": "Containers with MCP Gateway labels are managed MCP servers",
+      "match": {"has_evidence_type": "container_mcp_gateway"},
+      "action": {"set_minimum_confidence": 0.95}
+    },
+    {
+      "name": "Explicit MCP Boolean Label",
+      "description": "Containers with explicit MCP boolean labels (mcp=true, mcp-server=true, mcp.enabled=true)",
+      "match": {"has_evidence_type": "container_label_mcp_bool"},
+      "action": {"set_minimum_confidence": 0.90}
+    },
+    {
+      "name": "MCP Type Label",
+      "description": "Containers with MCP type labels (mcp.type=server, mcp.role=server)",
+      "match": {"has_evidence_type": "container_label_mcp_type"},
+      "action": {"set_minimum_confidence": 0.85}
+    },
+    {
+      "name": "Known MCP Entrypoint",
+      "description": "Containers with known MCP server executables in entrypoint or command arguments",
+      "match": {"has_evidence_type": "container_entrypoint_mcp"},
+      "action": {"set_minimum_confidence": 0.85}
+    },
+    {
+      "name": "MCP Transport Label",
+      "description": "Containers with MCP transport labels (mcp.transport=http|stdio|sse)",
+      "match": {"has_evidence_type": "container_label_mcp_transport"},
+      "action": {"set_minimum_confidence": 0.75}
+    },
+    {
+      "name": "MCP Boolean Environment",
+      "description": "Containers with explicit MCP environment variables (MCP_ENABLED=true, MCP_SERVER=true)",
+      "match": {"has_evidence_type": "container_env_mcp_bool"},
+      "action": {"set_minimum_confidence": 0.70}
+    },
+    {
+      "name": "MCP Config Environment",
+      "description": "Containers with MCP configuration environment variables (MCP_TRANSPORT, MCP_PORT, MCP_SERVER_NAME)",
+      "match": {"has_evidence_type": "container_env_mcp_config"},
+      "action": {"set_minimum_confidence": 0.65}
+    }
+  ]
+}

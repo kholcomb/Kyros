@@ -5,16 +5,34 @@
 ### Building from Source
 
 ```bash
-./build.sh
-```
+# Clone the repository
+git clone https://github.com/your-org/kyros.git
+cd kyros
 
-Binary will be created at `build/kyros`.
+# Build using the provided script
+./build.sh
+
+# Binary will be created at build/kyros
+./build/kyros --help
+```
 
 ### System Requirements
 
-- macOS 10.15 or later (current implementation)
-- C++17 compatible compiler
+**Current Platform Support:**
+- macOS 10.15 or later (fully supported)
+
+**Planned Platform Support:**
+- Linux (Ubuntu 20.04+, Fedora, Arch)
+- Windows 10/11
+
+**Build Requirements:**
+- C++17 compatible compiler (GCC 7+, Clang 5+, Apple Clang 10+)
 - CMake 3.15 or later
+- Git for version control
+
+**Optional:**
+- lcov/gcov for code coverage
+- SQLite3 for daemon mode (planned)
 
 ## Command Line Interface
 
@@ -22,13 +40,16 @@ Binary will be created at `build/kyros`.
 
 ```bash
 # Passive scan only (discovery without confirmation)
-kyros
+./build/kyros
 
 # Active scan (discover and confirm)
-kyros --mode active
+./build/kyros --mode active
 
 # Full scan with interrogation
-kyros --mode active --interrogate
+./build/kyros --mode active --interrogate
+
+# Note: If installed system-wide, you can omit ./build/ prefix
+# kyros --mode active
 ```
 
 ### Options
@@ -63,7 +84,7 @@ Discovers potential MCP servers without active testing.
 **Use Case:** Quick discovery with minimal system impact.
 
 ```bash
-kyros --mode passive --format json -o candidates.json
+./build/kyros --mode passive --format json -o candidates.json
 ```
 
 ### Active Mode
@@ -83,7 +104,7 @@ Confirms candidates by performing MCP protocol handshakes.
 **Use Case:** Verification of MCP servers with protocol validation.
 
 ```bash
-kyros --mode active --timeout 10000
+./build/kyros --mode active --timeout 10000
 ```
 
 ### Active with Interrogation
@@ -105,7 +126,7 @@ Extracts detailed capability information from confirmed servers.
 **Use Case:** Complete MCP server inventory with capability analysis.
 
 ```bash
-kyros --mode active --interrogate --format html -o report.html
+./build/kyros --mode active --interrogate --format html -o report.html
 ```
 
 ## Output Formats
@@ -115,7 +136,7 @@ kyros --mode active --interrogate --format html -o report.html
 Human-readable terminal output with formatted tables and summaries.
 
 ```bash
-kyros --mode active
+./build/kyros --mode active
 ```
 
 ### JSON
@@ -123,7 +144,7 @@ kyros --mode active
 Machine-parsable structured data suitable for automation.
 
 ```bash
-kyros --mode active --format json -o scan-results.json
+./build/kyros --mode active --format json -o scan-results.json
 ```
 
 **Structure:**
@@ -142,7 +163,7 @@ kyros --mode active --format json -o scan-results.json
 Web-viewable report with styled formatting.
 
 ```bash
-kyros --mode active --interrogate --format html -o report.html
+./build/kyros --mode active --interrogate --format html -o report.html
 ```
 
 ### CSV
@@ -150,7 +171,7 @@ kyros --mode active --interrogate --format html -o report.html
 Spreadsheet-compatible tabular data.
 
 ```bash
-kyros --mode active --format csv -o servers.csv
+./build/kyros --mode active --format csv -o servers.csv
 ```
 
 ## Examples
@@ -158,36 +179,36 @@ kyros --mode active --format csv -o servers.csv
 ### Find All MCP Servers
 
 ```bash
-kyros --mode active --format json -o mcp-inventory.json
+./build/kyros --mode active --format json -o mcp-inventory.json
 ```
 
 ### Analyze Claude Desktop Configuration
 
 ```bash
 # Passive scan to see configured servers
-kyros
+./build/kyros
 
 # Confirm they are running
-kyros --mode active
+./build/kyros --mode active
 ```
 
 ### Extract Server Capabilities
 
 ```bash
-kyros --mode active --interrogate --format html -o capabilities.html
+./build/kyros --mode active --interrogate --format html -o capabilities.html
 ```
 
 ### Quick Network Scan
 
 ```bash
 # Find HTTP MCP servers on localhost
-kyros --mode active --timeout 2000
+./build/kyros --mode active --timeout 2000
 ```
 
 ### Verbose Debugging
 
 ```bash
-kyros --mode active --interrogate --verbose
+./build/kyros --mode active --interrogate --verbose
 ```
 
 ## Configuration Files
@@ -300,10 +321,17 @@ Kyros can be integrated into automation workflows:
 
 ```bash
 # Generate JSON report for processing
-kyros --mode active --interrogate --format json | jq '.active_results.confirmed_servers'
+./build/kyros --mode active --interrogate --format json | jq '.active_results.confirmed_servers'
 
 # Check if specific server is running
-kyros --mode active --format json | jq -e '.active_results.servers_confirmed_count > 0'
+./build/kyros --mode active --format json | jq -e '.active_results.servers_confirmed_count > 0'
+
+# Exit code based integration
+if ./build/kyros --mode active --format json > /dev/null 2>&1; then
+    echo "MCP servers found"
+else
+    echo "No MCP servers found or error occurred"
+fi
 ```
 
 ### Filtering Results
@@ -312,10 +340,14 @@ Use `jq` or similar tools to filter JSON output:
 
 ```bash
 # Find servers with specific tools
-kyros --mode active --interrogate --format json | \
+./build/kyros --mode active --interrogate --format json | \
   jq '.active_results.confirmed_servers[] | select(.tools[]?.name == "read_file")'
 
 # List all available tools across all servers
-kyros --mode active --interrogate --format json | \
+./build/kyros --mode active --interrogate --format json | \
   jq '.active_results.confirmed_servers[].tools[].name' | sort -u
+
+# Count servers by transport type
+./build/kyros --mode active --format json | \
+  jq '.active_results.confirmed_servers | group_by(.transport_type) | map({transport: .[0].transport_type, count: length})'
 ```

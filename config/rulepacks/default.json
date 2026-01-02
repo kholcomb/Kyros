@@ -1,0 +1,238 @@
+{
+  "name": "Default MCP Server Detection Rules",
+  "version": "1.0",
+  "description": "Common patterns for well-known MCP servers and tools",
+  "rules": [
+    {
+      "name": "Official MCP Server Packages",
+      "description": "Detect official @modelcontextprotocol npm packages",
+      "match": {
+        "command_contains": "@modelcontextprotocol"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "official_mcp_package",
+          "description": "Official MCP server package detected",
+          "confidence": 0.95,
+          "source": "rulepack:default"
+        }
+      }
+    },
+    {
+      "name": "MCP Filesystem Server",
+      "description": "Official filesystem MCP server",
+      "match": {
+        "command_contains": "@modelcontextprotocol/server-filesystem"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "known_mcp_server",
+          "description": "MCP Filesystem server",
+          "confidence": 0.95,
+          "source": "rulepack:default"
+        },
+        "add_tag": "official-mcp-filesystem"
+      }
+    },
+    {
+      "name": "MCP GitHub Server",
+      "description": "Official GitHub MCP server",
+      "match": {
+        "command_contains": "@modelcontextprotocol/server-github"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "known_mcp_server",
+          "description": "MCP GitHub server",
+          "confidence": 0.95,
+          "source": "rulepack:default"
+        },
+        "add_tag": "official-mcp-github"
+      }
+    },
+    {
+      "name": "MCP Memory Server",
+      "description": "Official memory/knowledge graph MCP server",
+      "match": {
+        "command_contains": "@modelcontextprotocol/server-memory"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "known_mcp_server",
+          "description": "MCP Memory server",
+          "confidence": 0.95,
+          "source": "rulepack:default"
+        },
+        "add_tag": "official-mcp-memory"
+      }
+    },
+    {
+      "name": "MCP Time Server",
+      "description": "Official time utilities MCP server",
+      "match": {
+        "command_contains": "@modelcontextprotocol/server-time"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "known_mcp_server",
+          "description": "MCP Time server",
+          "confidence": 0.95,
+          "source": "rulepack:default"
+        },
+        "add_tag": "official-mcp-time"
+      }
+    },
+    {
+      "name": "MCP Brave Search Server",
+      "description": "Official Brave Search MCP server",
+      "match": {
+        "command_contains": "@modelcontextprotocol/server-brave-search"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "known_mcp_server",
+          "description": "MCP Brave Search server",
+          "confidence": 0.95,
+          "source": "rulepack:default"
+        },
+        "add_tag": "official-mcp-brave-search"
+      }
+    },
+    {
+      "name": "MCP Google Maps Server",
+      "description": "Official Google Maps MCP server",
+      "match": {
+        "command_contains": "@modelcontextprotocol/server-google-maps"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "known_mcp_server",
+          "description": "MCP Google Maps server",
+          "confidence": 0.95,
+          "source": "rulepack:default"
+        },
+        "add_tag": "official-mcp-google-maps"
+      }
+    },
+    {
+      "name": "MCP Postgres Server",
+      "description": "Official PostgreSQL MCP server",
+      "match": {
+        "command_contains": "@modelcontextprotocol/server-postgres"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "known_mcp_server",
+          "description": "MCP Postgres server",
+          "confidence": 0.95,
+          "source": "rulepack:default"
+        },
+        "add_tag": "official-mcp-postgres"
+      }
+    },
+    {
+      "name": "MCP Puppeteer Server",
+      "description": "Official Puppeteer browser automation MCP server",
+      "match": {
+        "command_contains": "@modelcontextprotocol/server-puppeteer"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "known_mcp_server",
+          "description": "MCP Puppeteer server",
+          "confidence": 0.95,
+          "source": "rulepack:default"
+        },
+        "add_tag": "official-mcp-puppeteer"
+      }
+    },
+    {
+      "name": "MCP Slack Server",
+      "description": "Official Slack MCP server",
+      "match": {
+        "command_contains": "@modelcontextprotocol/server-slack"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "known_mcp_server",
+          "description": "MCP Slack server",
+          "confidence": 0.95,
+          "source": "rulepack:default"
+        },
+        "add_tag": "official-mcp-slack"
+      }
+    },
+    {
+      "name": "Node.js MCP Pattern",
+      "description": "Boost confidence for Node.js processes with MCP-like characteristics",
+      "match": {
+        "process_name": "node",
+        "has_evidence_type": "parent_process"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "nodejs_mcp_pattern",
+          "description": "Node.js process with MCP parent - likely MCP server",
+          "confidence": 0.33,
+          "source": "rulepack:default"
+        }
+      }
+    },
+    {
+      "name": "Python MCP Pattern",
+      "description": "Boost confidence for Python processes with MCP-like characteristics",
+      "match": {
+        "process_name": "python",
+        "has_evidence_type": "parent_process"
+      },
+      "action": {
+        "add_evidence": {
+          "type": "python_mcp_pattern",
+          "description": "Python process with MCP parent - likely MCP server",
+          "confidence": 0.15,
+          "source": "rulepack:default"
+        }
+      }
+    },
+    {
+      "name": "npx Temporary Executables",
+      "description": "npx runs temporary packages - moderate confidence boost",
+      "match": {
+        "command_contains": "npx "
+      },
+      "action": {
+        "add_evidence": {
+          "type": "npx_execution",
+          "description": "Executed via npx (temporary package)",
+          "confidence": 0.4,
+          "source": "rulepack:default"
+        }
+      }
+    },
+    {
+      "name": "High Port Numbers (User Space)",
+      "description": "High port numbers (>10000) are often custom services",
+      "match": {
+        "port": 8080
+      },
+      "action": {
+        "add_evidence": {
+          "type": "common_dev_port",
+          "description": "Running on common development port 8080",
+          "confidence": 0.2,
+          "source": "rulepack:default"
+        }
+      }
+    },
+    {
+      "name": "Config Declared Boost",
+      "description": "Servers explicitly declared in config deserve high confidence",
+      "match": {
+        "has_evidence_type": "config_declared"
+      },
+      "action": {
+        "set_minimum_confidence": 0.85
+      }
+    }
+  ]
+}

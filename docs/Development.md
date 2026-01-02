@@ -28,14 +28,20 @@ make
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `BUILD_DAEMON` | Build daemon components | OFF |
+| `BUILD_SHARED_LIBS` | Build shared libraries | OFF |
+| `BUILD_DAEMON` | Build daemon service mode | ON |
 | `BUILD_TESTS` | Build test suite | ON |
-| `BUILD_EXAMPLES` | Build example programs | OFF |
-| `ENABLE_CONTAINERS` | Enable container detection | ON |
+| `BUILD_EXAMPLES` | Build example programs | ON |
+| `ENABLE_CONTAINERS` | Enable Docker/Kubernetes support | ON |
+| `ENABLE_MANAGEMENT_SERVER` | Enable management server client | ON |
 
 Example:
 ```bash
-cmake -DBUILD_DAEMON=ON -DBUILD_TESTS=OFF ..
+cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_DAEMON=ON \
+    -DBUILD_TESTS=ON \
+    -DBUILD_EXAMPLES=ON
 ```
 
 ## Project Structure
@@ -68,27 +74,55 @@ kyros/
 
 ```bash
 # Run all tests
-cd build && ctest
+cd build && ctest --output-on-failure
 
 # Run with verbose output
-ctest -V
+ctest --verbose
 
-# Run specific test
-./tests/test_scanner
+# Run specific test suite
+ctest -R test_scanner
+
+# Run tests in parallel
+ctest -j4
+
+# Generate coverage report
+../build.sh Coverage --coverage
 ```
 
 ### Writing Tests
 
-Tests use a minimal test framework with macros:
+Tests use Google Test framework:
 
 ```cpp
-void test_example() {
-    TEST("Example test case")
-        kyros::Config config;
-        ASSERT(config.is_valid(), "Config should be valid");
-    PASS()
+#include <gtest/gtest.h>
+#include <kyros/config.hpp>
+
+TEST(ConfigTest, ValidityCheck) {
+    // Arrange
+    kyros::Config config;
+
+    // Act & Assert
+    EXPECT_TRUE(config.is_valid());
+}
+
+// Test fixture for complex tests
+class ScannerTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        // Setup code
+    }
+
+    void TearDown() override {
+        // Cleanup code
+    }
+};
+
+TEST_F(ScannerTest, BasicScan) {
+    // Test using fixture
 }
 ```
+
+For comprehensive testing documentation, see [TESTING.md](TESTING.md).
 
 ## Adding Features
 
@@ -186,16 +220,25 @@ std::optional<MCPServer> test(const Candidate& candidate) {
 
 ## Dependencies
 
-### Required
+### Required (Automatically Fetched)
 
-- **nlohmann/json** - JSON parsing (via FetchContent)
-- **CLI11** - Command line parsing (via FetchContent)
+These dependencies are automatically downloaded and built via CMake FetchContent:
+
+- **nlohmann/json 3.11.0+** - JSON parsing and serialization
+- **CLI11 2.3.0+** - Command-line argument parsing
+- **Google Test 1.14.0+** - Testing framework (when BUILD_TESTS=ON)
+
+### Optional
+
+- **SQLite3** - Required for daemon mode (when BUILD_DAEMON=ON)
+- **lcov/gcov** - Required for code coverage reports
+- **gRPC** - Required for management server client (when ENABLE_MANAGEMENT_SERVER=ON)
 
 ### Platform-Specific
 
-- **macOS:** libproc (system)
-- **Linux:** procfs (planned)
-- **Windows:** Windows API (planned)
+- **macOS:** libproc (system library for process introspection)
+- **Linux:** procfs (planned, standard /proc filesystem access)
+- **Windows:** Windows API (planned, system libraries)
 
 ### Adding Dependencies
 
@@ -214,18 +257,57 @@ FetchContent_MakeAvailable(library_name)
 
 ### Verbose Mode
 
-Enable detailed logging:
+Enable detailed logging during execution:
 ```bash
-kyros --mode active --verbose
+./build/kyros --mode active --verbose
 ```
 
 ### Debug Build
 
-Build with debugging symbols:
+Build with debugging symbols and no optimizations:
 ```bash
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-make
+./build.sh Debug
+
+# Or manually
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+cmake --build .
+```
+
+### Using Debuggers
+
+**macOS (lldb):**
+```bash
 lldb ./build/kyros
+(lldb) run --mode active
+(lldb) breakpoint set --name main
+(lldb) continue
+```
+
+**Linux (gdb):**
+```bash
+gdb ./build/kyros
+(gdb) run --mode active
+(gdb) break main
+(gdb) continue
+```
+
+### Memory Debugging
+
+**Using Address Sanitizer (ASan):**
+```bash
+cmake .. \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+    -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+cmake --build .
+
+ASAN_OPTIONS=detect_leaks=1 ./build/kyros --mode active
+```
+
+**Using Valgrind (Linux):**
+```bash
+valgrind --leak-check=full --show-leak-kinds=all ./build/kyros --mode active
 ```
 
 ### Common Issues
