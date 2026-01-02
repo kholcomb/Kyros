@@ -33,6 +33,31 @@ cd build && ctest --output-on-failure
 
 ## Development Workflow
 
+```mermaid
+flowchart TD
+    A[Fork Repository] --> B[Clone Fork]
+    B --> C[Create Feature Branch]
+    C --> D[Write Code]
+    D --> E[Write Tests]
+    E --> F[Run Tests Locally]
+    F --> G{Tests Pass?}
+    G -->|No| D
+    G -->|Yes| H[Update Documentation]
+    H --> I[Commit Changes]
+    I --> J[Push to Fork]
+    J --> K[Create Pull Request]
+    K --> L[Code Review]
+    L --> M{Approved?}
+    M -->|Changes Requested| D
+    M -->|Yes| N[Merge to Main]
+
+    style A fill:#e1f5ff
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style F fill:#e8f5e9
+    style N fill:#c8e6c9
+```
+
 ### Creating a Feature Branch
 
 ```bash

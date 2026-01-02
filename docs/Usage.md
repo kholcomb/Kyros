@@ -67,21 +67,51 @@ cd kyros
 
 ## Scan Modes
 
+```mermaid
+graph TD
+    A[Select Scan Mode] --> B{Mode Type}
+    B -->|Passive| C[Passive Mode]
+    B -->|Active| D[Active Mode]
+    B -->|Active + Interrogate| E[Full Interrogation]
+
+    C --> C1[Parse Configs]
+    C --> C2[Inspect Processes]
+    C --> C3[Scan Network]
+    C1 & C2 & C3 --> C4[Candidates + Confidence]
+
+    D --> D1[Discover Candidates]
+    D1 --> D2[Protocol Handshake]
+    D2 --> D3[Confirmed Servers]
+
+    E --> E1[Discover & Confirm]
+    E1 --> E2[Extract Tools]
+    E1 --> E3[Extract Resources]
+    E1 --> E4[Extract Prompts]
+    E2 & E3 & E4 --> E5[Complete Profile]
+
+    style C fill:#e1f5ff
+    style D fill:#fff4e1
+    style E fill:#e8f5e9
+    style C4 fill:#c8e6c9
+    style D3 fill:#c8e6c9
+    style E5 fill:#c8e6c9
+```
+
 ### Passive Mode
 
-Discovers potential MCP servers without active testing.
+Discovers potential MCP servers without active testing through static analysis and system inspection.
 
 **Detection Methods:**
-- Configuration file parsing
-- Running process inspection
-- Network listener enumeration
+- Configuration file parsing (Claude Desktop, custom configs)
+- Running process inspection with parent process analysis
+- Network listener enumeration on localhost
 
 **Output:**
-- List of candidate servers
-- Confidence scores based on evidence
-- No server confirmation
+- List of candidate servers with evidence trails
+- Confidence scores based on aggregated evidence
+- No active server interaction or confirmation
 
-**Use Case:** Quick discovery with minimal system impact.
+**Use Case:** Rapid discovery with minimal system impact and no server communication.
 
 ```bash
 ./build/kyros --mode passive --format json -o candidates.json
@@ -89,19 +119,19 @@ Discovers potential MCP servers without active testing.
 
 ### Active Mode
 
-Confirms candidates by performing MCP protocol handshakes.
+Confirms candidate servers by performing MCP protocol handshakes via appropriate transports.
 
 **Process:**
-1. Discovers candidates (if not provided)
-2. Tests each candidate via appropriate transport
-3. Confirms servers that respond correctly to MCP initialize
+1. Discovers candidates through passive detection (if not provided)
+2. Tests each candidate using protocol-appropriate transport (stdio/HTTP)
+3. Validates servers via MCP initialize request/response exchange
 
 **Output:**
-- Confirmed MCP servers only
-- Protocol version and capabilities
-- Server metadata
+- Confirmed MCP servers only (failed tests excluded)
+- Protocol version and declared capabilities
+- Server identification metadata
 
-**Use Case:** Verification of MCP servers with protocol validation.
+**Use Case:** Definitive verification of MCP servers with protocol validation.
 
 ```bash
 ./build/kyros --mode active --timeout 10000
@@ -109,21 +139,21 @@ Confirms candidates by performing MCP protocol handshakes.
 
 ### Active with Interrogation
 
-Extracts detailed capability information from confirmed servers.
+Performs complete server analysis by confirming servers and extracting detailed capability information.
 
 **Additional Data Extracted:**
-- Available tools with input schemas
-- Available resources with metadata
-- Resource templates with parameters
-- Available prompts with arguments
+- Available tools with complete input schemas
+- Available resources with metadata and MIME types
+- Resource templates with URI patterns and parameters
+- Available prompts with argument specifications
 
 **Output:**
-- All active mode information
-- Detailed capability listings
-- Tool parameter specifications
-- Resource template patterns
+- All active mode information (server confirmation)
+- Detailed capability listings with parameter definitions
+- Tool input schema specifications
+- Resource template URI patterns
 
-**Use Case:** Complete MCP server inventory with capability analysis.
+**Use Case:** Comprehensive MCP server inventory with complete capability analysis.
 
 ```bash
 ./build/kyros --mode active --interrogate --format html -o report.html
@@ -131,9 +161,29 @@ Extracts detailed capability information from confirmed servers.
 
 ## Output Formats
 
+```mermaid
+graph LR
+    A[Scan Results] --> B{Format Selection}
+    B -->|--format cli| C[CLI Output]
+    B -->|--format json| D[JSON Output]
+    B -->|--format html| E[HTML Report]
+    B -->|--format csv| F[CSV Export]
+
+    C -->|Terminal| G[Human Readable]
+    D -->|Automation| H[Machine Parsable]
+    E -->|Browser| I[Web Viewable]
+    F -->|Spreadsheet| J[Tabular Data]
+
+    style A fill:#e1f5ff
+    style C fill:#fff4e1
+    style D fill:#e8f5e9
+    style E fill:#f3e5f5
+    style F fill:#ffe0b2
+```
+
 ### CLI (Default)
 
-Human-readable terminal output with formatted tables and summaries.
+Human-readable terminal output with formatted tables and summaries for interactive use.
 
 ```bash
 ./build/kyros --mode active
@@ -141,7 +191,7 @@ Human-readable terminal output with formatted tables and summaries.
 
 ### JSON
 
-Machine-parsable structured data suitable for automation.
+Machine-parsable structured data suitable for automation, integration, and programmatic processing.
 
 ```bash
 ./build/kyros --mode active --format json -o scan-results.json
@@ -160,7 +210,7 @@ Machine-parsable structured data suitable for automation.
 
 ### HTML
 
-Web-viewable report with styled formatting.
+Web-viewable report with styled formatting for sharing and documentation purposes.
 
 ```bash
 ./build/kyros --mode active --interrogate --format html -o report.html
@@ -168,7 +218,7 @@ Web-viewable report with styled formatting.
 
 ### CSV
 
-Spreadsheet-compatible tabular data.
+Spreadsheet-compatible tabular data for analysis in Excel, Google Sheets, or similar tools.
 
 ```bash
 ./build/kyros --mode active --format csv -o servers.csv

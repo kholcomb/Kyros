@@ -18,17 +18,23 @@ Kyros is a comprehensive detection and discovery engine for identifying Model Co
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                       Kyros ENGINE                       │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────────┐    ┌──────────────┐    ┌──────────────┐  │
-│  │  PASSIVE    │───▶│   ACTIVE     │───▶│ CORRELATION  │  │
-│  │   SCAN      │    │   PROBE      │    │   ENGINE     │  │
-│  └─────────────┘    └──────────────┘    └──────────────┘  │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+Kyros employs a three-phase scanning architecture that progressively refines MCP server discovery through passive detection, active confirmation, and optional capability interrogation.
+
+```mermaid
+graph LR
+    A[Passive Detection] --> B[Active Confirmation]
+    B --> C[Server Interrogation]
+
+    A -->|Candidates| D[Evidence Scoring]
+    D -->|Filtered| B
+    B -->|Confirmed Servers| C
+    C -->|Detailed Capabilities| E[Reporting Engine]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#e8f5e9
+    style D fill:#f3e5f5
+    style E fill:#ffe0b2
 ```
 
 ## Building
@@ -131,33 +137,47 @@ Comprehensive documentation is available in the `docs/` directory:
 
 ## Project Structure
 
+```mermaid
+graph TD
+    A[kyros/] --> B[include/kyros/]
+    A --> C[src/]
+    A --> D[tests/]
+    A --> E[docs/]
+    A --> F[packaging/]
+
+    B --> B1[detection/]
+    B --> B2[testing/]
+    B --> B3[reporting/]
+    B --> B4[platform/]
+
+    C --> C1[detection/]
+    C --> C2[testing/]
+    C --> C3[platform/]
+    C3 --> C3A[macos/]
+    C3 --> C3B[linux/]
+    C3 --> C3C[windows/]
+
+    D --> D1[unit/]
+    D --> D2[integration/]
+
+    F --> F1[linux/]
+    F --> F2[macos/]
+    F --> F3[windows/]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#e8f5e9
+    style D fill:#ffe0b2
+    style E fill:#f3e5f5
+    style F fill:#ffccbc
 ```
-kyros/
-├── include/kyros/      # Public headers
-│   ├── detection/         # Detection engines
-│   ├── testing/           # Testing engines
-│   ├── reporting/         # Reporters
-│   ├── platform/          # Platform abstraction
-│   ├── scan_types/        # Scan type configs
-│   └── daemon/            # Daemon components
-├── src/                   # Implementation
-│   ├── detection/
-│   ├── testing/
-│   ├── reporting/
-│   ├── platform/
-│   │   ├── linux/
-│   │   ├── macos/
-│   │   └── windows/
-│   └── daemon/
-├── tests/                 # Unit and integration tests
-├── examples/              # Example usage
-├── third_party/           # External dependencies
-├── packaging/             # Distribution packages
-│   ├── linux/
-│   ├── macos/
-│   └── windows/
-└── docs/                  # Additional documentation
-```
+
+**Key Directories:**
+- `include/kyros/` - Public API headers and interfaces
+- `src/` - Implementation files with platform-specific code
+- `tests/` - Comprehensive test suite with unit and integration tests
+- `docs/` - Technical documentation and guides
+- `packaging/` - Platform-specific distribution packages
 
 ## Testing
 

@@ -2,6 +2,30 @@
 
 ## Build System
 
+```mermaid
+flowchart TD
+    A[Start Build] --> B{Build Method}
+    B -->|Quick| C[./build.sh]
+    B -->|Manual| D[CMake Configuration]
+
+    C --> E[Auto Configure]
+    E --> F[Compile]
+    F --> G[Run Tests]
+    G --> H[Build Complete]
+
+    D --> I[mkdir build && cd build]
+    I --> J[cmake .. -DCMAKE_BUILD_TYPE=Release]
+    J --> K[cmake --build .]
+    K --> L{Run Tests?}
+    L -->|Yes| M[ctest]
+    L -->|No| H
+    M --> H
+
+    style A fill:#e1f5ff
+    style C fill:#c8e6c9
+    style H fill:#c8e6c9
+```
+
 ### Requirements
 
 - CMake 3.15 or later
@@ -11,7 +35,7 @@
 ### Building
 
 ```bash
-# Full build with tests
+# Full build with tests (recommended)
 ./build.sh
 
 # Build only (no tests)
@@ -125,6 +149,37 @@ TEST_F(ScannerTest, BasicScan) {
 For comprehensive testing documentation, see [TESTING.md](TESTING.md).
 
 ## Adding Features
+
+```mermaid
+flowchart TD
+    A[New Feature] --> B{Component Type}
+    B -->|Detection| C[Detection Engine]
+    B -->|Testing| D[Testing Engine]
+    B -->|Platform| E[Platform Adapter]
+
+    C --> C1[Create Header<br/>include/kyros/detection/]
+    C1 --> C2[Implement Logic<br/>src/detection/]
+    C2 --> C3[Register Engine<br/>PassiveScanner]
+    C3 --> F[Write Tests]
+
+    D --> D1[Create Header<br/>include/kyros/testing/]
+    D1 --> D2[Implement Logic<br/>src/testing/]
+    D2 --> D3[Register Engine<br/>ActiveScanner]
+    D3 --> F
+
+    E --> E1[Implement Interface<br/>PlatformAdapter]
+    E1 --> E2[Create Platform Code<br/>src/platform/os/]
+    E2 --> E3[Update Factory]
+    E3 --> F
+
+    F --> G[Run Tests]
+    G --> H[Update Docs]
+    H --> I[Submit PR]
+
+    style A fill:#e1f5ff
+    style F fill:#fff4e1
+    style I fill:#c8e6c9
+```
 
 ### New Detection Engine
 

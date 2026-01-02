@@ -1,6 +1,30 @@
 # Kyros Documentation
 
-Kyros is a Model Context Protocol (MCP) server discovery and interrogation tool. It provides comprehensive scanning capabilities for detecting, confirming, and analyzing MCP servers in local environments.
+Kyros is a Model Context Protocol (MCP) server discovery and interrogation tool that provides comprehensive scanning capabilities for detecting, confirming, and analyzing MCP servers in local environments.
+
+## Documentation Navigation
+
+```mermaid
+graph TD
+    A[New User] -->|Installation| B[Usage Guide]
+    C[Developer] -->|Contributing| D[Development Guide]
+    E[Architect] -->|System Design| F[Architecture Guide]
+
+    B -->|Learn Basics| G[Core Concepts]
+    D -->|Write Code| H[Testing Guide]
+    F -->|Understand Flow| I[Scan Workflows]
+
+    G -->|Ready to Build| B
+    H -->|Deploy| B
+    I -->|Implement| D
+
+    style A fill:#e1f5ff
+    style C fill:#e1f5ff
+    style E fill:#e1f5ff
+    style B fill:#c8e6c9
+    style D fill:#c8e6c9
+    style F fill:#c8e6c9
+```
 
 ## Documentation Overview
 
@@ -85,9 +109,24 @@ Guide for developers contributing to Kyros.
 
 ### Multi-Phase Scanning
 
-1. **Detection** - Discover potential MCP servers
-2. **Confirmation** - Verify via protocol handshake
-3. **Interrogation** - Extract detailed capabilities
+```mermaid
+flowchart LR
+    A[Phase 1:<br/>Detection] --> B[Phase 2:<br/>Confirmation]
+    B --> C[Phase 3:<br/>Interrogation]
+
+    A -->|Candidates| B
+    B -->|Confirmed Servers| C
+    C -->|Complete Profile| D[Results]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#e8f5e9
+    style D fill:#c8e6c9
+```
+
+1. **Detection** - Discover potential MCP servers through passive analysis
+2. **Confirmation** - Verify candidates via MCP protocol handshake
+3. **Interrogation** - Extract detailed server capabilities and metadata
 
 ### Evidence-Based Scoring
 

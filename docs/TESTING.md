@@ -15,6 +15,29 @@ This document describes the comprehensive testing infrastructure for the Kyros p
 
 ## Overview
 
+```mermaid
+graph TD
+    A[Testing Infrastructure] --> B[Unit Tests]
+    A --> C[Integration Tests]
+    A --> D[Code Coverage]
+    A --> E[CI/CD Pipeline]
+
+    B --> B1[Component Tests]
+    B --> B2[Mock Objects]
+    C --> C1[End-to-End Tests]
+    C --> C2[Workflow Tests]
+    D --> D1[Coverage Reports]
+    D --> D2[80%+ Target]
+    E --> E1[GitHub Actions]
+    E --> E2[Build Matrix]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#e8f5e9
+    style D fill:#f3e5f5
+    style E fill:#ffe0b2
+```
+
 Kyros uses **Google Test** (gtest/gmock) as its testing framework, providing:
 
 - **Unit tests** for individual components
@@ -70,6 +93,33 @@ xdg-open build/coverage/html/index.html  # Linux
 
 ## Test Organization
 
+```mermaid
+graph TD
+    A[tests/] --> B[unit/]
+    A --> C[integration/]
+    A --> D[fixtures/]
+    A --> E[mocks/]
+    A --> F[utils/]
+
+    B --> B1[test_scanner.cpp]
+    B --> B2[test_detection_engines.cpp]
+    B --> B3[test_platform_adapters.cpp]
+
+    C --> C1[test_end_to_end.cpp]
+
+    E --> E1[mock_platform_adapter.hpp]
+
+    F --> F1[test_helpers.hpp]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#e8f5e9
+    style D fill:#f3e5f5
+    style E fill:#ffe0b2
+    style F fill:#ffccbc
+```
+
+**Directory Structure:**
 ```
 tests/
 ├── unit/                  # Unit tests for individual components
@@ -284,6 +334,40 @@ COMMAND lcov --remove coverage.info
 ```
 
 ## Continuous Integration
+
+```mermaid
+flowchart TD
+    A[Push/PR to GitHub] --> B[GitHub Actions Trigger]
+    B --> C[Build Linux]
+    B --> D[Build macOS]
+    B --> E[Coverage Analysis]
+    B --> F[Static Analysis]
+    B --> G[Sanitizer Tests]
+
+    C --> C1[GCC 11]
+    C --> C2[Clang 14]
+    C1 & C2 --> H{All Tests Pass?}
+
+    D --> D1[Apple Clang]
+    D1 --> H
+
+    E --> E1[Generate Report]
+    E1 --> E2[Upload Coverage]
+
+    F --> F1[cppcheck]
+    F1 --> H
+
+    G --> G1[ASan/UBSan]
+    G1 --> H
+
+    H -->|Yes| I[CI Success]
+    H -->|No| J[CI Failure]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style I fill:#c8e6c9
+    style J fill:#ffcdd2
+```
 
 ### GitHub Actions Workflows
 
